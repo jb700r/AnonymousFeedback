@@ -9,11 +9,17 @@ const port = 3000;
 app.use(bodyParser.json());
 
 // Initialize SQLite Database
-const db = new sqlite3.Database(":memory:");
+// Connect to (or create) the database file
+let db = new sqlite3.Database("complaints.db", (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the complaints.db database.");
+});
 
 db.serialize(() => {
   db.run(
-    "CREATE TABLE complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)"
+    "CREATE TABLE IF NOT EXISTS complaints (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)"
   );
 });
 
@@ -32,6 +38,16 @@ app.post("/submit", (req, res) => {
     res.status(200).send({ id: this.lastID });
   });
   stmt.finalize();
+});
+
+// Get the complaints
+app.get("/complaints", (req, res) => {
+  db.all("SELECT * FROM complaints", [], (err, rows) => {
+    if (err) {
+      return res.status(500).send("Failed to retrieve complaints");
+    }
+    res.status(200).json(rows);
+  });
 });
 
 // Start the server
