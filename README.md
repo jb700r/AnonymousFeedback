@@ -12,7 +12,7 @@ run `node server.js` to start the database server
 
 ### POST REQUEST TO localhost:3000/submit with JSON BODY in this format
 
-```
+```JSON
 {
     "Message": "Type your message here"
 }
